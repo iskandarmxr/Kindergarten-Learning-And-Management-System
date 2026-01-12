@@ -130,8 +130,8 @@ class StripeController extends Controller
         // 2. Save payment details for each child
         foreach ($request->children as $child) {
             $payment->paymentDetails()->create([
-                'student_id' => $child['student_id'],
-                'amount' => $child['amount']
+                'student_record_id' => $child['student_id'],
+                'amt_paid' => $child['amount']
             ]);
         }
 
@@ -171,7 +171,7 @@ class StripeController extends Controller
         // Get children from payment details
         $children = $payment->paymentDetails->map(function($detail) {
             return (object)[
-                'id' => $detail->student_id,
+                'id' => $detail->student_record_id,
                 'name' => $detail->studentRecord->user->name ?? 'N/A',
                 'amount' => $detail->amt_paid ?? 0
             ];
@@ -197,7 +197,7 @@ class StripeController extends Controller
         // Update payment details for each child
         foreach ($request->children as $child) {
             $payment->paymentDetails()
-                ->where('student_id', $child['student_id'])
+                ->where('student_record_id', $child['student_id'])
                 ->update(['amt_paid' => $child['amount']]);
         }
 
