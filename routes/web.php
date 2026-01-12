@@ -295,7 +295,7 @@ Route::group(['namespace' => 'MyParent','middleware' => 'my_parent',], function(
         ->name('parent.timetable.pdf');
     });
 
-    Route::prefix('parent')->middleware(['auth'])->group(function() {
+    Route::prefix('parent')->group(function() {
 
         // List all learning materials
         Route::get('/materials', [MyController::class, 'materials'])
