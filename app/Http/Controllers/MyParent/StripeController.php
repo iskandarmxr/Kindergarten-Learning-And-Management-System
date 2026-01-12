@@ -168,6 +168,19 @@ class StripeController extends Controller
      */
     public function showCheckoutForm(Payment $payment)
     {
+        // Verify the payment belongs to the authenticated parent
+        if ($payment->my_parent_id !== auth()->id()) {
+            abort(403, 'Unauthorized access to this payment.');
+        }
+        
+        // Eager load the relationships to avoid N+1 queries
+        $payment->load('paymentDetails.studentRecord.user');
+        
+        // Check if payment has details
+        if ($payment->paymentDetails->isEmpty()) {
+            return back()->with('flash_danger', 'This payment has no associated children. Please contact support.');
+        }
+        
         // Get children from payment details
         $children = $payment->paymentDetails->map(function($detail) {
             return (object)[
