@@ -4,7 +4,7 @@
 @section('content')
 <div class="card">
     <div class="card-header header-elements-inline">
-        <h5 class="card-title">Pay Fees</h5>
+        <h5 class="card-title">Pay Payment</h5>
     </div>
 
     <div class="card-body">
@@ -12,7 +12,12 @@
             <div class="alert alert-danger">{{ session('flash_danger') }}</div>
         @endif
 
-        <form action="{{ route('parent.payments.checkout.process') }}" method="POST" id="payment-form">
+        <div class="mb-4">
+            <h4>{{ $payment->title }}</h4>
+            <p class="text-muted mb-0">Total Amount: <strong>RM {{ number_format($payment->amount, 2) }}</strong></p>
+        </div>
+
+        <form action="{{ route('parent.payments.checkout.process', $payment->id) }}" method="POST" id="payment-form">
             @csrf
 
             <table class="table table-bordered">
