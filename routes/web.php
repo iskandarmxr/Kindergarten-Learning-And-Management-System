@@ -295,23 +295,13 @@ Route::group(['namespace' => 'MyParent','middleware' => 'my_parent',], function(
         ->name('parent.timetable.pdf');
     });
 
-    Route::prefix('parent')->group(function() {
+    // Learning materials routes (moved outside and made more explicit)
+    Route::get('/parent/materials', [MyController::class, 'materials'])
+        ->name('parent.materials.index');
 
-        // List all learning materials
-        Route::get('/materials', [MyController::class, 'materials'])
-            ->name('parent.materials.index');
-
-        // Download a specific material by ID (test route)
-        Route::get('/materials/{id}/download', [MyController::class, 'download'])
-            ->name('materials.parent.download');
-        
-        // Debug route
-        Route::get('/test-download', function() {
-            return 'Route is working! Auth: ' . (auth()->check() ? 'YES' : 'NO') . 
-                   ', User type: ' . (auth()->user()->user_type ?? 'N/A');
-        });
-
-    });
+    Route::get('/parent/materials/{id}/download', [MyController::class, 'download'])
+        ->where('id', '[0-9]+')
+        ->name('materials.parent.download');
 
     
 
