@@ -175,20 +175,15 @@ class MyController extends Controller
     {
         $material = LearningMaterial::findOrFail($id);
 
-        // Use the file_path directly since it already contains 'materials/filename'
-        $filePath = 'public/' . $material->file_path;
+        $fullPath = storage_path("app/public/{$material->file_path}");
 
-        // Debug: uncomment to see what's happening
-        // dd($filePath, Storage::exists($filePath), Storage::path($filePath));
-
-        if (!Storage::exists($filePath)) {
-            abort(404, 'File not found: ' . $filePath);
+        if (!file_exists($fullPath)) {
+            abort(404, 'File not found: ' . $fullPath);
         }
 
-        return Storage::download(
-            $filePath,
-            $material->title . '.' . pathinfo($material->file_path, PATHINFO_EXTENSION)
-        );
+        $originalName = $material->title . '.' . pathinfo($material->file_path, PATHINFO_EXTENSION);
+        
+        return response()->download($fullPath, $originalName);
     }
 
 
