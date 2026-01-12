@@ -295,12 +295,12 @@ Route::group(['namespace' => 'MyParent','middleware' => 'my_parent',], function(
         ->name('parent.timetable.pdf');
     });
 
-    // Learning materials routes (moved outside and made more explicit)
+    // Learning materials routes
     Route::get('/parent/materials', [MyController::class, 'materials'])
         ->name('parent.materials.index');
 
-    Route::get('/parent/materials/{id}/download', [MyController::class, 'download'])
-        ->where('id', '[0-9]+')
+    Route::get('/parent/materials/{material_id}/download', [MyController::class, 'download'])
+        ->where('material_id', '[0-9]+')
         ->name('materials.parent.download');
 
     

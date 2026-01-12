@@ -171,15 +171,19 @@ class MyController extends Controller
         return view('pages.parent.materials.index', compact('materials'));
     }
 
-    public function download($id = null)
+    public function download($material_id)
     {
-        return response()->json([
-            'received_id' => $id,
-            'request_path' => request()->path(),
-            'request_url' => request()->url(),
-            'route_params' => request()->route()->parameters(),
-            'all_params' => request()->all()
-        ]);
+        $material = LearningMaterial::findOrFail($material_id);
+
+        $fullPath = storage_path("app/public/{$material->file_path}");
+
+        if (!file_exists($fullPath)) {
+            abort(404, 'File not found: ' . $fullPath);
+        }
+
+        $originalName = $material->title . '.' . pathinfo($material->file_path, PATHINFO_EXTENSION);
+        
+        return response()->download($fullPath, $originalName);
     }
 
 
