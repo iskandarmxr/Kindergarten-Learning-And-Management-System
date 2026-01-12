@@ -301,9 +301,15 @@ Route::group(['namespace' => 'MyParent','middleware' => 'my_parent',], function(
         Route::get('/materials', [MyController::class, 'materials'])
             ->name('parent.materials.index');
 
-        // Download a specific material by ID
+        // Download a specific material by ID (test route)
         Route::get('/materials/{id}/download', [MyController::class, 'download'])
             ->name('materials.parent.download');
+        
+        // Debug route
+        Route::get('/test-download', function() {
+            return 'Route is working! Auth: ' . (auth()->check() ? 'YES' : 'NO') . 
+                   ', User type: ' . (auth()->user()->user_type ?? 'N/A');
+        });
 
     });
 
