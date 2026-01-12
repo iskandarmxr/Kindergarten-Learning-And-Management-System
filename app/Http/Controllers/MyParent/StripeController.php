@@ -164,7 +164,7 @@ class StripeController extends Controller
     }
 
     /**
-     * Show checkout form for entering amounts per child
+     * Show checkout form for entering amounts per chil
      */
     public function showCheckoutForm(Payment $payment)
     {
