@@ -309,6 +309,10 @@ Route::group(['namespace' => 'MyParent','middleware' => 'my_parent',], function(
 
     Route::prefix('parent')->middleware('auth')->group(function() {
 
+        // Stripe one-off payment: redirect immediately to Stripe Checkout
+        Route::get('/payments/checkout/{payment}', [StripeController::class, 'checkoutPage'])
+            ->name('parent.payments.checkout');
+
         // Create multi-child payment & redirect to Stripe
         Route::post('/payments/checkout', [StripeController::class, 'createPayment'])
             ->name('parent.payments.checkout.process'); // POST form here
