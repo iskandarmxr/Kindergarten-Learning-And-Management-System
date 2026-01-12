@@ -53,3 +53,21 @@
 
 @section('scripts')
 <script>
+    // Calculate total amount dynamically
+    function calculateTotal() {
+        let total = 0;
+        document.querySelectorAll('.child-amount').forEach(input => {
+            total += parseFloat(input.value) || 0;
+        });
+        document.getElementById('total-amount').textContent = total.toFixed(2);
+    }
+
+    // Update total on page load
+    calculateTotal();
+
+    // Update total when amounts change
+    document.querySelectorAll('.child-amount').forEach(input => {
+        input.addEventListener('input', calculateTotal);
+    });
+</script>
+@endsection

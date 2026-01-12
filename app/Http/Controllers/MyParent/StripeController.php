@@ -128,4 +128,69 @@ class StripeController extends Controller
         // 4. Redirect user directly to Stripe-hosted checkout page
         return redirect($session->url);
     }
+
+    /**
+     * Show checkout form for entering amounts per child
+     */
+    public function showCheckoutForm(Payment $payment)
+    {
+        // Get children from payment details
+        $children = $payment->paymentDetails->map(function($detail) {
+            return (object)[
+                'id' => $detail->student_id,
+                'name' => $detail->studentRecord->user->name ?? 'N/A',
+                'amount' => $detail->amt_paid ?? 0
+            ];
+        });
+
+        return view('pages.parent.payments.checkout', compact('payment', 'children'));
+    }
+
+    /**
+     * Process checkout form and redirect to Stripe
+     */
+    public function processCheckout(Request $request, Payment $payment)
+    {
+        $totalAmount = collect($request->children)->sum('amount');
+
+        if ($totalAmount < 0.50) {
+            return back()->with('flash_danger', 'Total amount must be at least RM0.50.');
+        }
+
+        // Update payment amount
+        $payment->update(['amount' => $totalAmount]);
+
+        // Update payment details for each child
+        foreach ($request->children as $child) {
+            $payment->paymentDetails()
+                ->where('student_id', $child['student_id'])
+                ->update(['amt_paid' => $child['amount']]);
+        }
+
+        // Create Stripe Checkout Session
+        Stripe::setApiKey(config('services.stripe.secret'));
+
+        $session = Session::create([
+            'payment_method_types' => ['card'],
+            'line_items' => [[
+                'price_data' => [
+                    'currency' => 'myr',
+                    'product_data' => [
+                        'name' => $payment->title,
+                    ],
+                    'unit_amount' => intval($totalAmount * 100),
+                ],
+                'quantity' => 1,
+            ]],
+            'mode' => 'payment',
+            'success_url' => route('parent.payments.stripe.success'),
+            'cancel_url' => route('parent.payments.cancel'),
+            'metadata' => [
+                'payment_id' => $payment->id,
+                'parent_id' => auth()->id(),
+            ],
+        ]);
+
+        return redirect($session->url);
+    }
 }
