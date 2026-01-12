@@ -38,7 +38,7 @@ class StripeController extends Controller
                 'quantity' => 1,
             ]],
             'mode' => 'payment',
-            'success_url' => route('parent.payments.stripe.success'),
+            'success_url' => route('parent.payments.stripe.success') . '?session_id={CHECKOUT_SESSION_ID}',
             'cancel_url' => route('parent.payments.cancel'),
             'metadata' => [
                 'payment_id' => $payment->id,
@@ -53,11 +53,45 @@ class StripeController extends Controller
     /**
      * Handle success callback from Stripe
      */
-    public function success()
+    public function success(Request $request)
     {
-        // Optionally: update all pending payments to 'paid'
-        // $payment = Payment::find(...);
-        // $payment->update(['status' => 'paid']);
+        // Get the session_id from Stripe redirect
+        $sessionId = $request->query('session_id');
+        
+        if ($sessionId) {
+            try {
+                Stripe::setApiKey(config('services.stripe.secret'));
+                
+                // Retrieve the session to get payment details
+                $session = Session::retrieve($sessionId);
+                
+                // Get payment_id from metadata
+                $paymentId = $session->metadata->payment_id ?? null;
+                
+                if ($paymentId && $session->payment_status === 'paid') {
+                    $payment = Payment::find($paymentId);
+                    
+                    if ($payment && $payment->status !== 'paid') {
+                        // Update payment status
+                        $payment->update([
+                            'status' => 'paid',
+                            'stripe_payment_id' => $session->payment_intent
+                        ]);
+                        
+                        // Mark all payment details as paid
+                        foreach ($payment->paymentDetails as $detail) {
+                            $detail->update([
+                                'amt_paid' => $detail->amt_paid,
+                                'balance' => 0
+                            ]);
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                // Log error but still show success page
+                \Log::error('Stripe session retrieval failed: ' . $e->getMessage());
+            }
+        }
 
         return view('pages.parent.payments.success');
     }
@@ -117,7 +151,7 @@ class StripeController extends Controller
                 'quantity' => 1,
             ]],
             'mode' => 'payment',
-            'success_url' => route('parent.payments.stripe.success'),
+            'success_url' => route('parent.payments.stripe.success') . '?session_id={CHECKOUT_SESSION_ID}',
             'cancel_url' => route('parent.payments.cancel'),
             'metadata' => [
                 'payment_id' => $payment->id,
@@ -183,7 +217,7 @@ class StripeController extends Controller
                 'quantity' => 1,
             ]],
             'mode' => 'payment',
-            'success_url' => route('parent.payments.stripe.success'),
+            'success_url' => route('parent.payments.stripe.success') . '?session_id={CHECKOUT_SESSION_ID}',
             'cancel_url' => route('parent.payments.cancel'),
             'metadata' => [
                 'payment_id' => $payment->id,
