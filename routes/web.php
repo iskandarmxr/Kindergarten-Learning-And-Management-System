@@ -302,7 +302,7 @@ Route::group(['namespace' => 'MyParent','middleware' => 'my_parent',], function(
             ->name('parent.materials.index');
 
         // Download a specific material by ID
-        Route::get('/materials/download/{id}', [MyController::class, 'download'])
+        Route::get('/materials/{id}/download', [MyController::class, 'download'])
             ->name('materials.parent.download');
 
     });
