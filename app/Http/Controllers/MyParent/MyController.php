@@ -175,11 +175,14 @@ class MyController extends Controller
     {
         $material = LearningMaterial::findOrFail($id);
 
-        // Ubah ke folder materials
-        $filePath = 'public/materials/' . basename($material->file_path);
+        // Use the file_path directly since it already contains 'materials/filename'
+        $filePath = 'public/' . $material->file_path;
+
+        // Debug: uncomment to see what's happening
+        // dd($filePath, Storage::exists($filePath), Storage::path($filePath));
 
         if (!Storage::exists($filePath)) {
-            abort(404, 'File not found');
+            abort(404, 'File not found: ' . $filePath);
         }
 
         return Storage::download(
